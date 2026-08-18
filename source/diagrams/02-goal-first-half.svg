@@ -1,0 +1,94 @@
+<svg viewBox="0 0 680 176" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="goal-first-half-title goal-first-half-desc">
+  <title id="goal-first-half-title">本节聚焦：at 方法为何被自动添加到 proxy 上</title>
+  <desc id="goal-first-half-desc">与目标图相同的横向布局，但只聚焦前半段：pro::proxy&lt;Dictionary&gt;、第一个未知环节与带 at(int) 的未知类被橙色虚线框圈出为当前讨论范围；右侧的其余未知环节与 std::map&lt;int, std::string&gt; 半透明淡出，表示稍后再讲。</desc>
+
+  <defs>
+    <marker id="d2-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+  </defs>
+
+  <!-- ── 画布 ───────────────────────────────────────────────── -->
+  <rect width="100%" height="100%" fill="#191919"/>
+
+  <!-- ── zone：当前聚焦范围（先画，z-order 在箭头与节点之下） ── -->
+  <rect x="8" y="36" width="348" height="80" rx="8"
+        fill="rgba(255,122,23,0.04)" stroke="#ff7a17"
+        stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="24" y="28" width="164" height="16" fill="#191919"/>
+  <text x="32" y="40" fill="#ff7a17" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.2">FOCUS</text>
+  <text x="80" y="40" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">前半段：</text>
+  <text x="116" y="40" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">at</text>
+  <text x="132" y="40" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">方法从何而来</text>
+
+  <!-- ── 右半段说明（全亮度，避免淡出后不可读） ─────────────── -->
+  <text x="536" y="40" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.2">LATER</text>
+  <text x="584" y="40" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">稍后再讲</text>
+
+  <!-- ── 前半段箭头（先画，z-order 在节点之下；同轴 y=76） ──── -->
+  <line x1="172" y1="76" x2="196" y2="76" stroke="#7d8187" stroke-width="1.2" marker-end="url(#d2-arrow)"/>
+  <line x1="228" y1="76" x2="252" y2="76" stroke="#7d8187" stroke-width="1.2"
+        stroke-dasharray="4,4" marker-end="url(#d2-arrow)"/>
+
+  <!-- ══ 左端 · pro::proxy<Dictionary>（聚焦中） ═════════════ -->
+  <rect x="16" y="48" width="156" height="56" rx="8" fill="#191919"/>
+  <rect x="16" y="48" width="156" height="56" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="28" y="68" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">pro::proxy&lt;Dictionary&gt;</text>
+  <line x1="16" y1="80" x2="172" y2="80" stroke="#212327" stroke-width="1"/>
+  <text x="28" y="96" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ operator-&gt;()</text>
+
+  <!-- ══ 未知节点 1（聚焦中） ═══════════════════════════════ -->
+  <rect x="196" y="60" width="32" height="32" rx="8" fill="#191919"/>
+  <rect x="196" y="60" width="32" height="32" rx="8" fill="none"
+        stroke="#7d8187" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="212" y="80" fill="#7d8187" font-size="12" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">?</text>
+
+  <!-- ══ 未知类 · 只知道它带 at(int)（聚焦中） ═══════════════ -->
+  <rect x="252" y="48" width="96" height="56" rx="8" fill="#191919"/>
+  <rect x="252" y="48" width="96" height="56" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="264" y="68" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">???</text>
+  <line x1="252" y1="80" x2="348" y2="80" stroke="#212327" stroke-width="1"/>
+  <text x="264" y="96" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ at(int)</text>
+
+  <!-- ══ 后半段：整体淡出，表示稍后再讲 ═════════════════════ -->
+  <g opacity="0.28">
+    <line x1="356" y1="76" x2="372" y2="76" stroke="#7d8187" stroke-width="1.2"
+          stroke-dasharray="4,4" marker-end="url(#d2-arrow)"/>
+    <line x1="404" y1="76" x2="428" y2="76" stroke="#7d8187" stroke-width="1.2"
+          stroke-dasharray="4,4" marker-end="url(#d2-arrow)"/>
+    <line x1="460" y1="76" x2="484" y2="76" stroke="#7d8187" stroke-width="1.2" marker-end="url(#d2-arrow)"/>
+
+    <rect x="372" y="60" width="32" height="32" rx="8" fill="#191919"/>
+    <rect x="372" y="60" width="32" height="32" rx="8" fill="none"
+          stroke="#7d8187" stroke-width="0.8" stroke-dasharray="4,4"/>
+    <text x="388" y="80" fill="#7d8187" font-size="12" text-anchor="middle"
+          font-family="'JetBrains Mono', ui-monospace, monospace">?</text>
+
+    <rect x="428" y="60" width="32" height="32" rx="8" fill="#191919"/>
+    <rect x="428" y="60" width="32" height="32" rx="8" fill="none"
+          stroke="#7d8187" stroke-width="0.8" stroke-dasharray="4,4"/>
+    <text x="444" y="80" fill="#7d8187" font-size="12" text-anchor="middle"
+          font-family="'JetBrains Mono', ui-monospace, monospace">?</text>
+
+    <rect x="484" y="48" width="180" height="56" rx="8" fill="#191919"/>
+    <rect x="484" y="48" width="180" height="56" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+    <text x="496" y="68" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">std::map&lt;int, std::string&gt;</text>
+    <line x1="484" y1="80" x2="664" y2="80" stroke="#212327" stroke-width="1"/>
+    <text x="496" y="96" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+  </g>
+
+  <!-- ── 图例（底部横条） ──────────────────────────────────── -->
+  <line x1="16" y1="140" x2="664" y2="140" stroke="#212327" stroke-width="0.8"/>
+  <text x="16" y="160" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.4">LEGEND</text>
+  <rect x="80" y="152" width="24" height="12" rx="2" fill="rgba(255,122,23,0.04)"
+        stroke="#ff7a17" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="112" y="160" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">本节讨论范围</text>
+  <g opacity="0.28">
+    <rect x="212" y="152" width="12" height="12" rx="2" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  </g>
+  <text x="232" y="160" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">后续小节再展开</text>
+</svg>

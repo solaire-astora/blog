@@ -1,0 +1,160 @@
+<svg viewBox="0 0 680 1016" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="hpa-prometheus-title hpa-prometheus-desc">
+  <title id="hpa-prometheus-title">Prometheus 自定义指标驱动 HPA 的闭环链路</title>
+  <desc id="hpa-prometheus-desc">Pod 暴露指标端点，Service 与 ServiceMonitor 向 Prometheus 注册抓取目标，Prometheus 抓取并保存时序指标；Prometheus Adaptor 查询这些指标并转换为 k8s 自定义指标，HPA 读取后调整 Pod 副本数，形成闭环。</desc>
+
+  <defs>
+    <marker id="hpa-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+    <marker id="hpa-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ff7a17"/>
+    </marker>
+  </defs>
+
+  <!-- ── 画布 ───────────────────────────────────────────────── -->
+  <rect width="100%" height="100%" fill="#191919"/>
+
+  <!-- ── zone：指标采集链路 ─────────────────────────────────── -->
+  <rect x="48" y="48" width="600" height="468" rx="8"
+        fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.10)"
+        stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="264" y="40" width="112" height="16" fill="#191919"/>
+  <text x="272" y="52" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace"
+        letter-spacing="1.2">METRICS PIPELINE</text>
+
+  <!-- ── zone：自动扩缩容 ───────────────────────────────────── -->
+  <rect x="48" y="564" width="600" height="376" rx="8"
+        fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.10)"
+        stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="424" y="556" width="80" height="16" fill="#191919"/>
+  <text x="432" y="568" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace"
+        letter-spacing="1.2">AUTOSCALING</text>
+
+  <!-- ── 箭头（先画，z-order 在节点之下） ───────────────────── -->
+  <line x1="284" y1="124" x2="284" y2="164" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+  <line x1="284" y1="216" x2="284" y2="256" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+  <line x1="284" y1="308" x2="284" y2="348" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+  <line x1="284" y1="400" x2="284" y2="440" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+  <line x1="284" y1="588" x2="284" y2="492" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+  <line x1="284" y1="640" x2="284" y2="680" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+  <line x1="284" y1="732" x2="284" y2="772" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+  <line x1="284" y1="864" x2="284" y2="824" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+
+  <!-- ── 右侧回指：Prometheus 抓取 Pod 指标 ─────────────────── -->
+  <path d="M 408 376 H 592 Q 600 376 600 368 V 104 Q 600 96 592 96 H 408"
+        fill="none" stroke="#7d8187" stroke-width="1.2" marker-end="url(#hpa-arrow)"/>
+
+  <!-- ── 左侧回指：HPA 调整副本数，闭环关键动作 ─────────────── -->
+  <path d="M 160 892 H 40 Q 32 892 32 884 V 112 Q 32 104 40 104 H 160"
+        fill="none" stroke="#ff7a17" stroke-width="1.2" marker-end="url(#hpa-arrow-accent)"/>
+
+  <!-- ── 箭头标签（遮罩落在节点之外的空白段） ───────────────── -->
+  <rect x="296" y="138" width="68" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="147" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">EXPOSE PORT</text>
+
+  <rect x="296" y="230" width="64" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="239" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">MATCH PORT</text>
+
+  <rect x="296" y="322" width="56" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="331" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">REGISTER</text>
+
+  <rect x="296" y="414" width="36" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="423" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">SAVE</text>
+
+  <rect x="296" y="534" width="40" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="543" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">QUERY</text>
+
+  <rect x="296" y="654" width="52" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="663" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">CONVERT</text>
+
+  <rect x="296" y="746" width="36" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="755" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">SAVE</text>
+
+  <rect x="296" y="838" width="68" height="12" rx="2" fill="#191919"/>
+  <text x="300" y="847" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">GET METRICS</text>
+
+  <rect x="536" y="230" width="56" height="12" rx="2" fill="#191919"/>
+  <text x="540" y="239" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">SCRAPE</text>
+
+  <rect x="40" y="534" width="80" height="12" rx="2" fill="#191919"/>
+  <text x="44" y="543" fill="#ff7a17" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">MODIFY REPLICA</text>
+
+  <!-- ══ N1 · Pod ═══════════════════════════════════════════ -->
+  <rect x="160" y="72" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="72" width="248" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="176" y="94" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">Pod</text>
+  <line x1="160" y1="106" x2="408" y2="106" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="119" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">业务容器暴露 /metrics 指标端点</text>
+
+  <!-- ══ N2 · Service ═══════════════════════════════════════ -->
+  <rect x="160" y="164" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="164" width="248" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="176" y="186" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">Service</text>
+  <line x1="160" y1="198" x2="408" y2="198" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="211" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">按 label 选中 Pod，暴露命名端口</text>
+
+  <!-- ══ N3 · ServiceMonitor ════════════════════════════════ -->
+  <rect x="160" y="256" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="256" width="248" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="176" y="278" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">ServiceMonitor</text>
+  <line x1="160" y1="290" x2="408" y2="290" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="303" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">声明式抓取配置，匹配 Service 端口</text>
+
+  <!-- ══ N4 · Prometheus ════════════════════════════════════ -->
+  <rect x="160" y="348" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="348" width="248" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="176" y="370" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">Prometheus</text>
+  <line x1="160" y1="382" x2="408" y2="382" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="395" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">按注册的抓取目标周期性拉取指标</text>
+
+  <!-- ══ N5 · Prometheus Metric（存储） ═════════════════════ -->
+  <rect x="160" y="440" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="440" width="248" height="52" rx="8" fill="#26282c" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="462" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">Prometheus Metric</text>
+  <line x1="160" y1="474" x2="408" y2="474" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="487" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">时序样本，可由 PromQL 查询</text>
+
+  <!-- ══ N6 · Prometheus Adaptor ════════════════════════════ -->
+  <rect x="160" y="588" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="588" width="248" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="176" y="610" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">Prometheus Adaptor</text>
+  <line x1="160" y1="622" x2="408" y2="622" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="635" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">Custom Metrics API 的实现方</text>
+
+  <!-- ══ N7 · Metric To Custom Metric ═══════════════════════ -->
+  <rect x="160" y="680" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="680" width="248" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="176" y="702" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">Metric To Custom Metric</text>
+  <line x1="160" y1="714" x2="408" y2="714" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="727" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">按 rules 配置重命名与聚合指标</text>
+
+  <!-- ══ N8 · k8s Custom Metric（存储） ════════════════════ -->
+  <rect x="160" y="772" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="772" width="248" height="52" rx="8" fill="#26282c" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="794" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">k8s Custom Metric</text>
+  <line x1="160" y1="806" x2="408" y2="806" stroke="#212327" stroke-width="1"/>
+  <text x="176" y="819" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">集群内可被 HPA 读取的自定义指标</text>
+
+  <!-- ══ N9 · HPA（焦点：闭环的决策者） ════════════════════ -->
+  <rect x="160" y="864" width="248" height="52" rx="8" fill="#191919"/>
+  <rect x="160" y="864" width="248" height="52" rx="8" fill="rgba(255,122,23,0.06)" stroke="#ff7a17" stroke-width="1"/>
+  <text x="176" y="886" fill="#ff7a17" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">HPA</text>
+  <line x1="160" y1="898" x2="408" y2="898" stroke="rgba(255,122,23,0.25)" stroke-width="1"/>
+  <text x="176" y="911" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">对比目标值，调整 Deployment 副本数</text>
+
+  <!-- ── 图例（底部横条） ──────────────────────────────────── -->
+  <line x1="32" y1="972" x2="648" y2="972" stroke="#212327" stroke-width="0.8"/>
+  <text x="32" y="992" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.4">LEGEND</text>
+  <line x1="112" y1="989" x2="136" y2="989" stroke="#7d8187" stroke-width="1.2"/>
+  <text x="144" y="992" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">数据流向</text>
+  <rect x="216" y="983" width="12" height="12" rx="2" fill="#26282c" stroke="#212327" stroke-width="1"/>
+  <text x="236" y="992" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">指标存储</text>
+  <rect x="308" y="982" width="24" height="14" rx="2" fill="none"
+        stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="340" y="992" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">阶段边界</text>
+  <line x1="412" y1="989" x2="436" y2="989" stroke="#ff7a17" stroke-width="1.2"/>
+  <text x="444" y="992" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">闭环回路：调整副本数</text>
+</svg>

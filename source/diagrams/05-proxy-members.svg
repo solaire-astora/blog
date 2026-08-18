@@ -1,0 +1,78 @@
+<svg viewBox="0 0 680 536" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="proxy-members-title proxy-members-desc">
+  <title id="proxy-members-title">proxy&lt;Dictionary&gt; 通过成员 ia_ 获得 at 方法</title>
+  <desc id="proxy-members-desc">纵向链路：pro::proxy 的成员 ia_ 类型为 indirect_accessor，它继承自 MemAt::accessor，两者都暴露 std::string at(int)；而 accessor 如何最终调到 std::map::at 这一环在本图中仍未揭晓。</desc>
+
+  <defs>
+    <marker id="d5-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+    <marker id="d5-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ff7a17"/>
+    </marker>
+  </defs>
+
+  <!-- ── 画布 ───────────────────────────────────────────────── -->
+  <rect width="100%" height="100%" fill="#191919"/>
+
+  <!-- ── 箭头（先画，z-order 在节点之下） ───────────────────── -->
+  <line x1="96" y1="144" x2="96" y2="176" stroke="#ff7a17" stroke-width="1.2" marker-end="url(#d5-arrow-accent)"/>
+  <line x1="96" y1="228" x2="96" y2="260" stroke="#7d8187" stroke-width="1.2" marker-end="url(#d5-arrow)"/>
+  <line x1="96" y1="312" x2="96" y2="344" stroke="#7d8187" stroke-width="1.2" marker-end="url(#d5-arrow)"/>
+  <line x1="96" y1="384" x2="96" y2="416" stroke="#7d8187" stroke-width="1.2" marker-end="url(#d5-arrow)"/>
+
+  <!-- ── 箭头标签（mask 落在节点之间的空白段） ──────────────── -->
+  <rect x="108" y="152" width="36" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="161" fill="#ff7a17" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">ia_</text>
+
+  <rect x="108" y="236" width="76" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="245" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">INHERITS</text>
+
+  <!-- ══ N1 · pro::proxy<Dictionary> ═════════════════════════ -->
+  <rect x="32" y="48" width="400" height="96" rx="8" fill="#191919"/>
+  <rect x="32" y="48" width="400" height="96" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="70" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">pro::proxy&lt;Dictionary&gt;</text>
+  <line x1="32" y1="82" x2="432" y2="82" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="100" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">- <tspan fill="#ff7a17">ia_</tspan> : details::facade_traits&lt;Dictionary&gt;::indirect_accessor</text>
+  <line x1="32" y1="112" x2="432" y2="112" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="132" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ operator-&gt;()    + operator*()</text>
+
+  <!-- ══ N2 · indirect_accessor ══════════════════════════════ -->
+  <rect x="32" y="176" width="376" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="176" width="376" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="198" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">details::facade_traits&lt;Dictionary&gt;::indirect_accessor</text>
+  <line x1="32" y1="210" x2="408" y2="210" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="223" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ══ N3 · MemAt::accessor ═══════════════════════════════ -->
+  <rect x="32" y="260" width="576" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="260" width="576" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="282" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">MemAt::accessor&lt;Dictionary, conv_impl&lt;false, MemAt, std::string(int)&gt;, std::string(int)&gt;</text>
+  <line x1="32" y1="294" x2="608" y2="294" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="307" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ══ U1 · 仍未知的一环 ══════════════════════════════════ -->
+  <rect x="32" y="344" width="128" height="40" rx="8" fill="#191919"/>
+  <rect x="32" y="344" width="128" height="40" rx="8" fill="#191919"
+        stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="48" y="368" fill="#7d8187" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">?</text>
+  <text x="68" y="368" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">这一环仍未知</text>
+
+  <!-- ══ N4 · std::map（最终落点） ═════════════════════════ -->
+  <rect x="32" y="416" width="280" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="416" width="280" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="438" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">std::map&lt;int, std::string&gt;</text>
+  <line x1="32" y1="450" x2="312" y2="450" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="463" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ── 图例（底部横条） ──────────────────────────────────── -->
+  <line x1="32" y1="500" x2="648" y2="500" stroke="#212327" stroke-width="0.8"/>
+  <text x="32" y="520" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.4">LEGEND</text>
+  <line x1="112" y1="517" x2="136" y2="517" stroke="#7d8187" stroke-width="1.2"/>
+  <text x="144" y="520" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">调用路径</text>
+  <rect x="216" y="510" width="24" height="14" rx="2" fill="none"
+        stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="248" y="520" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">尚未揭晓的一环</text>
+  <rect x="332" y="511" width="12" height="12" rx="2" fill="rgba(255,122,23,0.06)" stroke="#ff7a17" stroke-width="1"/>
+  <text x="352" y="520" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">本图揭晓的一环：成员 ia_</text>
+</svg>

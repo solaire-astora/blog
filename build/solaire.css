@@ -1,0 +1,1997 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   索拉尔的主页 —— 设计系统
+   ══════════════════════════════════════════════════════════════════════════
+
+   设计语言基于 DESIGN-x.ai.md：单一近黑画布、1px hairline 承担全部层级线索、
+   全站 font-weight 400、无阴影、pill 为唯一交互形状。
+
+   设计程式（Karl Gerstner）：一个圆 = 一年，360° = 12 个月。
+   页面上每一根刻针的角度都由文章日期算出，见 build/sun.js。
+
+   #ff7a17 是全站唯一点缀色，只标记「当前太阳的位置」= 最新一篇文章的角度。
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 字体：自托管，服务器在国内，不依赖 Google Fonts ────────────────── */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-latin-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-latin-ext-400.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* 色板：锁定，不新增颜色 */
+  --canvas: #0a0a0a;
+  --card: #191919;
+  --soft: #1a1c20;
+  --mid: #363a3f;
+  --hair: #212327;
+  --ink: #ffffff;
+  --body: #dadbdf;
+  --mute: #7d8187;
+  --sun: #ff7a17;
+
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+
+  /* 4px 基准间距 */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+
+  --rail-w: 220px;
+  --rail-w-collapsed: 48px;
+  --axis-w: 200px;
+  /* 正文栏宽度随视口流动，上限 1000px。
+     行长的真正约束不是绝对宽度而是「每行几个字」—— 中文舒适区间 35–50 字，
+     上限约 55。汉字宽等于字号，所以抬字号能在同样宽度下压住字数：16px 时
+     1000px 是 62 字（超限），18px 时正好 55 字。故宽度与字号必须一起调，
+     只抬宽度会让长行难以跟读。 */
+  --measure: min(1000px, 100%);
+  /* --measure 的纯数值形态。calc 里不能拿 min() 求最大宽度，故单列一个。
+     两者必须同步改 —— 侧栏收起态会覆盖这一对。 */
+  --measure-max: 1000px;
+  /* 正文字号随视口流动：窄屏 16px，宽屏到 18px。与上面的宽度配合后，
+     各档宽度下每行字数都落在 43–55 之间。 */
+  --prose-size: clamp(16px, 0.55vw + 12.4px, 18px);
+
+  /* 内容区左右内边距。抽成变量是因为 --content-max 要用它算总宽，
+     窄屏断点里改 padding 时不同步就会算错。 */
+  --wrap-pad: var(--s8);
+  /* 内容区撑满时的宽度 = 目录轴 + 间距 + 正文 + 左右内边距。
+     由 --measure-max / --axis-w / --wrap-pad 算出，改它们时这里自动跟随。 */
+  --content-max: calc(
+    var(--axis-w) + var(--s7) + var(--measure-max) + var(--wrap-pad) * 2
+  );
+  /* 超宽屏的两侧留白。侧栏与内容区共用它，避免两处各写一个固定值而脱节。 */
+  --gutter: max(0px, calc((100vw - var(--rail-w) - var(--content-max)) / 2));
+}
+
+/* ── 重置 ────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  background: var(--canvas);
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--s6);
+}
+body {
+  background: var(--canvas);
+  color: var(--body);
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+/* 这套语言从不加粗：层级由字号、负字距与 hairline 密度承担 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+strong,
+b,
+th,
+dt {
+  font-weight: 400;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+ul,
+ol {
+  list-style: none;
+}
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+::selection {
+  background: var(--sun);
+  color: var(--canvas);
+}
+:focus-visible {
+  outline: 1px solid var(--sun);
+  outline-offset: 2px;
+}
+.skip {
+  position: absolute;
+  left: -9999px;
+}
+.skip:focus {
+  left: var(--s4);
+  top: var(--s4);
+  z-index: 10;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 9999px;
+  padding: var(--s2) var(--s4);
+  color: var(--ink);
+}
+
+/* ── mono caption：与 sans 的两面对照就是这套语言的声音 ──────────────── */
+.cap,
+.cap14 {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.cap {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+}
+.cap14 {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 1.4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   骨架：固定侧栏 + 主栏
+   ══════════════════════════════════════════════════════════════════════ */
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  /* 超宽屏上整体居中：视口比「侧栏 + 内容区」宽出来的部分对半分到两侧。
+     没有它，2560px 屏上内容全挤在左边、右侧空掉一半。
+
+     --gutter 是唯一的偏移来源，.rail 的 left 也引用它 —— 早先两处各写一个
+     固定值，.wrap 用 fit-content 收窄后就对不上（实测差 62px）。 */
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+/* ── 侧栏收起 ────────────────────────────────────────────────────────
+   收起后只留 48px 窄条（站名太阳环 + 展开按钮）。读文章时导航用不到，
+   而 1180px 以下正文会被侧栏与目录轴挤到 500px 以下 —— 收起后正文多拿
+   172px。状态由 <head> 里的脚本在首帧前决定，避免窄屏闪一下宽侧栏。 */
+html.rail-collapsed {
+  --rail-w: var(--rail-w-collapsed);
+  /* 收起后正文上限再放宽一档。否则大屏上正文已达上限，点击收起只会多出空白、
+     正文一动不动，按钮看起来就是坏的。1120px 在 18px 字号下约 62 字/行，
+     略超舒适上限 —— 这是用户主动收起时的取舍，他要的就是更宽。 */
+  --measure: min(1120px, 100%);
+  --measure-max: 1120px;
+}
+
+.rail {
+  position: fixed;
+  /* left 跟着 .shell 的居中留白走 —— fixed 定位不受父级 padding 影响，
+     不同步的话超宽屏上内容居中了、侧栏还贴在屏幕最左边 */
+  top: 0;
+  bottom: 0;
+  left: var(--gutter);
+  width: var(--rail-w);
+  height: 100vh;
+  border-right: 1px solid var(--hair);
+  padding: var(--s6) var(--s5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--canvas);
+  z-index: 5;
+}
+/* 站点标记 + 导航。头盔在 .railTop 里而非 .railBody 里，因此收起时
+   .railBody 整块隐去、头盔仍留在窄条上。 */
+.railTop {
+  min-width: 0;
+}
+/* 站点标记：像素头盔 + 站名。头盔是 24×38 的矢量重建，硬边不发毛。 */
+.rail .mark {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+.rail .helm {
+  /* 用高度定尺寸 —— 头盔是竖长比例，按宽度定会在收起态里过大 */
+  height: 34px;
+  width: auto;
+  flex: none;
+  display: block;
+  transition:
+    height 0.2s,
+    opacity 0.15s;
+}
+.rail .mark:hover .helm {
+  /* 全站没有阴影，也不做位移动效；hover 反馈用极轻的提亮 */
+  opacity: 0.82;
+}
+.rail .markText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition:
+    opacity 0.16s,
+    visibility 0.16s;
+}
+.rail .sitename {
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+.rail .sitesub {
+  margin-top: 1px;
+  white-space: nowrap;
+}
+.vnav {
+  margin-top: var(--s7);
+  display: flex;
+  flex-direction: column;
+}
+.vnav a {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--mute);
+  padding: var(--s3) 0;
+  border-top: 1px solid var(--hair);
+  transition: color 0.15s;
+}
+.vnav a:last-child {
+  border-bottom: 1px solid var(--hair);
+}
+.vnav a .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  border: 1px solid var(--mid);
+  flex: none;
+}
+.vnav a em {
+  font-style: normal;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mute);
+}
+.vnav a:hover {
+  color: var(--ink);
+}
+.vnav a:hover .dot {
+  border-color: var(--mute);
+}
+.vnav a.on {
+  color: var(--ink);
+}
+.vnav a.on .dot {
+  background: var(--sun);
+  border-color: var(--sun);
+}
+/* 侧栏底部：篝火 + 角度公式，都是注解性质的东西 */
+.railFoot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+/* 篝火 —— 8bit 逐帧动画。
+   4 帧横向拼在一张 SVG 里（56×15 网格），.bonfireWin 只露出一帧宽度，
+   靠 steps(4) 把 SVG 整幅平移，于是逐帧播放。这是精灵图的经典做法：
+   纯 CSS，无 JS，不额外发请求，帧间没有插值所以边缘始终是硬的。 */
+.bonfire {
+  /* 单帧 22×25 网格，按 2 倍放大。宽高比必须与网格一致，否则像素会被拉伸 */
+  width: 44px;
+  height: 50px;
+}
+.bonfireWin {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.bonfireSprite {
+  /* 整幅是 4 帧宽，故 SVG 宽度设为窗口的 4 倍 */
+  width: 400%;
+  height: 100%;
+  display: block;
+  animation: bonfire 0.6s steps(1, end) infinite;
+}
+@keyframes bonfire {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-25%);
+  }
+  50% {
+    transform: translateX(-50%);
+  }
+  75% {
+    transform: translateX(-75%);
+  }
+}
+.rail .formula {
+  color: var(--mute);
+}
+
+/* 收起按钮：常驻在侧栏右上角，收起态下居中于窄条 */
+.railToggle {
+  position: absolute;
+  top: var(--s5);
+  right: var(--s5);
+  width: 24px;
+  height: 33px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  border-radius: 9999px;
+  color: var(--mute);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.railToggle:hover {
+  color: var(--ink);
+}
+.railToggle .bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 14px;
+}
+.railToggle .bars i {
+  display: block;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.2s;
+}
+.railToggle .bars i:first-child {
+  width: 14px;
+}
+.railToggle .bars i:last-child {
+  width: 9px;
+}
+.railToggle:hover .bars i:last-child {
+  width: 14px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.rail .formula {
+  transition:
+    opacity 0.16s,
+    visibility 0.16s;
+}
+html.rail-collapsed .rail .formula {
+  /* visibility:hidden 仍占位，会参与 flex 分配 —— 必须退出布局 */
+  display: none;
+}
+/* 收起态：公式隐去，篝火留下并缩到窄条能容的尺寸。
+   篝火是这条 48px 窄带上唯一还在动的东西，正合黑魂里篝火的角色 ——
+   那是一个可以停下来歇脚的点。 */
+html.rail-collapsed .railFoot {
+  align-items: center;
+  width: 100%;
+}
+html.rail-collapsed .bonfire {
+  width: 29px;
+  height: 33px;
+}
+html.rail-collapsed .rail {
+  padding-left: 0;
+  padding-right: 0;
+  align-items: center;
+  /* 收起后内容只剩「按钮 + 头盔」，改为顶部对齐 —— 展开态的
+     space-between 会把头盔推到侧栏垂直中央（实测 y=429），
+     那里既不像 logo 也不像导航入口。 */
+  justify-content: flex-start;
+  gap: var(--s5);
+}
+html.rail-collapsed .railToggle {
+  position: static;
+  margin: 0 auto;
+}
+/* 收起态：站名隐去，只留头盔居中作为回首页的入口。
+   头盔常驻在 .railTop（而非 .railBody）里，正是为了收起后仍可见 —— 窄条
+   上如果什么标记都没有，就认不出这是哪个站了。
+
+   .railTop 必须限宽：.rail 收起时是 align-items:center，而 markText 里的
+   站名 white-space:nowrap，不限宽会把 .railTop 撑到 225px，居中后整块被
+   推到画布外（实测 x=-89，头盔完全看不见）。 */
+html.rail-collapsed .railTop {
+  width: 100%;
+  overflow: hidden;
+  /* 不撑高 —— .rail 是 space-between 的 flex，.railBody 虽已隐形但
+     仍占据高度，会把头盔顶到侧栏底部去 */
+  flex: none;
+}
+html.rail-collapsed .railBody {
+  /* 隐形不够，必须退出布局，否则它撑起的高度仍参与 space-between 分配 */
+  display: none;
+}
+html.rail-collapsed .rail .mark {
+  justify-content: center;
+  margin-top: var(--s5);
+}
+html.rail-collapsed .rail .markText {
+  /* 不只是隐形，还要退出布局 —— 否则它仍参与 flex 的宽度计算 */
+  display: none;
+}
+html.rail-collapsed .rail .helm {
+  height: 26px;
+}
+.rail {
+  transition: width 0.2s;
+}
+
+main {
+  grid-column: 2;
+  min-width: 0;
+}
+/* 内容区在主栏里居中。此前只设了 max-width 没设 auto margin，宽屏上内容
+   全靠左：1920px 视口右侧空掉 708px（37%），2560px 空 53%。 */
+.wrap {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--wrap-pad);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   母题：环 + 刻针
+   ══════════════════════════════════════════════════════════════════════ */
+.ring {
+  position: relative;
+  border: 1px solid var(--mid);
+  border-radius: 9999px;
+  flex: none;
+  display: inline-block;
+}
+.ring i {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 50%;
+  margin-left: -0.5px;
+  transform-origin: 50% 100%;
+  background: var(--mute);
+}
+.r12 {
+  width: 12px;
+  height: 12px;
+}
+.r40 {
+  width: 40px;
+  height: 40px;
+  border-color: var(--hair);
+}
+.r56 {
+  width: 56px;
+  height: 56px;
+  border-color: var(--hair);
+}
+/* 大尺度的环：刻针自圆周向内，不贯穿圆心 */
+.r40 i {
+  background: linear-gradient(
+    to bottom,
+    var(--mid) 0,
+    var(--mid) 8px,
+    transparent 8px
+  );
+}
+.r56 i {
+  background: linear-gradient(
+    to bottom,
+    var(--mid) 0,
+    var(--mid) 9px,
+    transparent 9px
+  );
+}
+.r40 i.sun {
+  background: linear-gradient(
+    to bottom,
+    var(--sun) 0,
+    var(--sun) 8px,
+    transparent 8px
+  );
+}
+.r56 i.sun {
+  background: linear-gradient(
+    to bottom,
+    var(--sun) 0,
+    var(--sun) 9px,
+    transparent 9px
+  );
+}
+.r12 i.sun {
+  background: var(--sun);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   首屏：太阳即坐标系
+   ══════════════════════════════════════════════════════════════════════ */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 460px;
+  gap: var(--s7);
+  align-items: center;
+  padding: 96px 0 var(--s8);
+  border-bottom: 1px solid var(--hair);
+}
+.hero h1 {
+  font-size: 72px;
+  line-height: 76px;
+  letter-spacing: -1.8px;
+  color: var(--ink);
+}
+.hero .praise {
+  margin-top: var(--s5);
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+}
+.hero .praise .zh {
+  font-size: 18px;
+  line-height: 28px;
+  color: var(--body);
+}
+.hero .desc {
+  margin-top: var(--s5);
+  max-width: 520px;
+  color: var(--mute);
+}
+.rule {
+  border-top: 1px solid var(--hair);
+  margin-top: var(--s6);
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 0 var(--s6);
+  margin-top: var(--s4);
+  justify-content: start;
+}
+.facts > div {
+  padding-top: var(--s3);
+}
+.facts .n {
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 1.4px;
+  color: var(--body);
+}
+.facts .k {
+  margin-top: var(--s1);
+}
+
+.sundial {
+  position: relative;
+  width: 420px;
+  height: 420px;
+  justify-self: center;
+}
+.sundial .disc,
+.sundial .disc2,
+.sundial .disc3 {
+  position: absolute;
+  border-radius: 9999px;
+}
+.sundial .disc {
+  inset: 0;
+  border: 1px solid var(--mid);
+}
+.sundial .disc2 {
+  inset: 56px;
+  border: 1px solid var(--hair);
+}
+.sundial .disc3 {
+  inset: 150px;
+  border: 1px solid var(--hair);
+}
+.sundial .hands {
+  position: absolute;
+  inset: 0;
+}
+.sundial .hands span {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 50%;
+  margin-left: -0.5px;
+  transform-origin: 50% 100%;
+}
+/* 月份刻度：外缘短针 */
+.sundial .m {
+  background: linear-gradient(
+    to bottom,
+    var(--hair) 0,
+    var(--hair) 18px,
+    transparent 18px
+  );
+}
+/* 文章落位：内缘一段 */
+.sundial .e {
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 22px,
+    var(--mid) 22px,
+    var(--mid) 56px,
+    transparent 56px
+  );
+}
+/* 唯一的橙射线 = 当前太阳的位置 */
+.sundial .ray {
+  background: linear-gradient(
+    to bottom,
+    var(--sun) 0,
+    var(--sun) 56px,
+    transparent 56px
+  );
+}
+.sundial .ray::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -3.5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--sun);
+}
+.sundial .core {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.sundial .core .num {
+  /* 四位年份在 96px 下宽 228px，会压出 120px 的最内圈、把圆环切断。
+     64px 约 152px 宽，落在中圈内，环保持完整。 */
+  font-size: 64px;
+  line-height: 64px;
+  letter-spacing: -1.6px;
+  color: var(--ink);
+}
+.sundial .core .lbl {
+  margin-top: var(--s3);
+}
+/* 圆心的 eyebrow 在数字之上，故改为下间距 */
+.sundial .core .lbl.top {
+  margin-top: 0;
+  margin-bottom: var(--s3);
+}
+.sundial .legend {
+  position: absolute;
+  left: 0;
+  top: -32px;
+}
+.sundial .anno {
+  position: absolute;
+  left: calc(50% + 46px);
+  top: calc(50% + 200px);
+  white-space: nowrap;
+}
+.sundial .anno .v {
+  color: var(--sun);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   章节标注 / 页面头
+   ══════════════════════════════════════════════════════════════════════ */
+.seclabel {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s8) 0 var(--s5);
+}
+.seclabel .bar {
+  flex: 1;
+  border-top: 1px solid var(--hair);
+}
+.seclabel .t {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.pageHead {
+  padding: var(--s8) 0 0;
+}
+.pageHead h1 {
+  font-size: 48px;
+  line-height: 52px;
+  letter-spacing: -1.2px;
+  color: var(--ink);
+}
+.pageHead .sub {
+  margin-top: var(--s3);
+}
+.pageHead .sub a:hover {
+  color: var(--sun);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   索引：按年分组，年份 + 年环作粘性左轴
+   ══════════════════════════════════════════════════════════════════════ */
+.yearblock {
+  display: grid;
+  grid-template-columns: var(--axis-w) minmax(0, 1fr);
+  gap: var(--s7);
+  padding: var(--s6) 0;
+  border-top: 1px solid var(--hair);
+}
+.yearblock .axis {
+  position: sticky;
+  top: var(--s6);
+  align-self: start;
+}
+.yearblock .y {
+  font-size: 48px;
+  line-height: 48px;
+  letter-spacing: -1.2px;
+  color: var(--ink);
+}
+.yearblock .axis .ring {
+  margin-top: var(--s4);
+}
+.yearblock .axis .meta {
+  margin-top: var(--s3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 12px 48px minmax(0, 1fr) auto 88px;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s3) 0;
+  border-top: 1px solid var(--hair);
+}
+.rows > .row:first-child {
+  border-top: 0;
+}
+.row .deg {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  color: var(--mute);
+}
+.row .t {
+  font-size: 18px;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+  color: var(--body);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.row .d {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  color: var(--mute);
+  text-align: right;
+}
+.row .tags {
+  display: flex;
+  gap: var(--s1);
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--mute);
+  border: 1px solid var(--hair);
+  border-radius: 9999px;
+  padding: 2px var(--s2);
+  white-space: nowrap;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.tag:hover {
+  color: var(--ink);
+  border-color: var(--mid);
+}
+.row:hover .t {
+  color: var(--ink);
+}
+.row:hover .deg {
+  color: var(--sun);
+}
+.row:hover .ring {
+  border-color: var(--mute);
+}
+.row:hover .ring i {
+  background: var(--sun);
+}
+.row.latest .deg {
+  color: var(--sun);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   标签总览
+   ══════════════════════════════════════════════════════════════════════ */
+/* 用 gap 做 1px 分割线时，末行不满会露出底色，所以改由格子自身画边线：
+   每格右下各一条 hairline，最右列与最后一行的外侧边线由容器补齐。 */
+.taggrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tagcard {
+  border-right: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+  margin: 0 -1px -1px 0;
+}
+.tagcard a {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding: var(--s5);
+  height: 100%;
+  transition: background 0.15s;
+}
+.tagcard a:hover {
+  background: var(--card);
+}
+.tagcard .name {
+  font-size: 18px;
+  line-height: 28px;
+  color: var(--body);
+  letter-spacing: -0.2px;
+}
+.tagcard a:hover .name {
+  color: var(--ink);
+}
+.tagcard a:hover .ring {
+  border-color: var(--mid);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   文章页：200px 目录轴 + 680px 正文
+   ══════════════════════════════════════════════════════════════════════ */
+.entryHead {
+  padding: var(--s8) 0 var(--s5);
+  border-bottom: 1px solid var(--hair);
+}
+.entryHead .crumb {
+  margin-bottom: var(--s4);
+}
+.entryHead .crumb a:hover {
+  color: var(--sun);
+}
+.entryHead h1 {
+  font-size: 48px;
+  line-height: 54px;
+  letter-spacing: -1.2px;
+  color: var(--ink);
+  max-width: 900px;
+}
+.entryHead .meta {
+  margin-top: var(--s4);
+  display: flex;
+  gap: var(--s3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.entryBody {
+  display: grid;
+  grid-template-columns: var(--axis-w) minmax(0, var(--measure));
+  gap: var(--s7);
+  padding: var(--s6) 0 96px;
+}
+.entryBody.single {
+  grid-template-columns: minmax(0, var(--measure));
+  padding-top: var(--s6);
+}
+.entryBody .side {
+  position: sticky;
+  top: var(--s6);
+  align-self: start;
+  max-height: calc(100vh - var(--s8));
+  overflow-y: auto;
+}
+.toc .h,
+.position .h {
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--hair);
+}
+.toc ol {
+  counter-reset: toc;
+}
+.toc li {
+  counter-increment: toc;
+  border-bottom: 1px solid var(--hair);
+}
+.toc a {
+  display: flex;
+  gap: var(--s2);
+  padding: var(--s2) 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--mute);
+  transition: color 0.15s;
+  /* 标题常含长符号名（std::memory_order_acq_rel），必须允许断行 */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.toc a::before {
+  content: counter(toc, decimal-leading-zero);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  color: var(--mid);
+  flex: none;
+}
+.toc a:hover {
+  color: var(--ink);
+}
+/* 层级缩进：作者正文用 # 起，收集时记的是原始层级 1/2/3 */
+.toc li.lv2 a {
+  padding-left: var(--s3);
+}
+.toc li.lv3 a {
+  padding-left: var(--s5);
+}
+.toc li.lv2 a::before,
+.toc li.lv3 a::before {
+  color: var(--hair);
+}
+.position {
+  margin-top: var(--s6);
+}
+.position .posRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding-top: var(--s3);
+}
+
+/* ── 正文排版 ────────────────────────────────────────────────────────── */
+.prose {
+  /* 字号随视口流动，与 --measure 配合把每行字数压在 43–55 之间。
+     只抬宽度不抬字号会让长行难以跟读 —— 行长的约束是字数不是像素。 */
+  font-size: var(--prose-size);
+  /* 行高按 1.75 倍跟着字号走，不写死 px —— 中文正文行距偏松更好读 */
+  line-height: 1.75;
+  color: var(--body);
+  min-width: 0;
+}
+.prose > * + * {
+  margin-top: var(--s4);
+}
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: var(--ink);
+  letter-spacing: -0.6px;
+}
+.prose h2 {
+  /* border-top 与相邻元素的 margin 会在视觉上贴死，所以上间距给足再画线 */
+  margin-top: var(--s8);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--hair);
+  font-size: 32px;
+  line-height: 40px;
+}
+/* 正文开头就是 h2 时不需要那条线 */
+.prose > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.prose h3 {
+  margin-top: var(--s6);
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.4px;
+}
+.prose h4 {
+  margin-top: var(--s5);
+  font-size: 18px;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+}
+.prose a {
+  color: var(--sun);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+  /* 链接文字有时就是裸 URL（android-engine 那篇有一条 391px 的），中间没有
+     空格可断，320px 屏上会把整页顶出 95px 横向滚动。URL 里的 / 与 . 不算
+     断点，只有 break-word 能切。 */
+  overflow-wrap: break-word;
+}
+.prose a:hover {
+  border-bottom-color: var(--sun);
+}
+/* 站内文章链接（{% post_link %}）。外链是新窗口打开的，这里给一道常显的
+   虚线，读者点之前就知道自己不会离开本站。 */
+.prose a.postLink {
+  border-bottom: 1px dashed var(--mid);
+}
+.prose a.postLink:hover {
+  border-bottom-style: solid;
+  border-bottom-color: var(--sun);
+}
+.prose ul,
+.prose ol {
+  padding-left: var(--s5);
+}
+.prose ul li {
+  list-style: none;
+  position: relative;
+}
+.prose ul li::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--s5) * -1 + 4px);
+  top: 11px;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  border: 1px solid var(--mid);
+}
+.prose ol {
+  list-style: decimal;
+  color: var(--mute);
+}
+.prose ol > li {
+  list-style: decimal;
+}
+.prose li {
+  margin-top: var(--s2);
+  color: var(--body);
+}
+.prose li > ul,
+.prose li > ol {
+  margin-top: var(--s2);
+}
+.prose blockquote {
+  padding: var(--s4) var(--s5);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  color: var(--mute);
+}
+.prose blockquote > * + * {
+  margin-top: var(--s3);
+}
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--hair);
+  margin: var(--s7) 0;
+}
+.prose img {
+  margin: var(--s5) auto;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+}
+
+/* 可点开看原图的截图。原始宽度多在 1500px 以上，满栏也只有三成大小，
+   故整图可点。hover 时描边提亮，暗示可交互。 */
+.prose .imgLink {
+  display: block;
+  margin: var(--s5) 0;
+}
+.prose .imgLink img {
+  margin: 0;
+  transition: border-color 0.15s;
+}
+.prose .imgLink:hover img {
+  border-color: var(--mid);
+}
+
+/* 内联 SVG 图表。
+   SVG 自带 #191919 底色（比画布 #0a0a0a 亮一档）+ 外层 hairline 边框，
+   于是图是一个有边界的物件，而不是从页面里长出来的一块 —— 早先两者同色，
+   图与正文之间没有分界。底色写在 SVG 内部而非仅靠 CSS，这样放大浏览时
+   底色也跟着走。宽度撑满正文栏，按 viewBox 等比缩放。 */
+.prose .diagram {
+  /* 纵向间距写在这里，横向由下面那条溢出规则给（写 margin 简写会覆盖它） */
+  margin-top: var(--s6);
+  margin-bottom: var(--s6);
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  /* SVG 自带底色，圆角要靠裁切才看得出来 */
+  overflow: hidden;
+}
+.prose .diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.prose .diagram figcaption {
+  margin: 0 var(--s5) var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--hair);
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+}
+.prose th {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--body);
+  text-align: left;
+  background: var(--soft);
+}
+.prose th,
+.prose td {
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--hair);
+}
+
+/* 行内代码：pill —— 与全站唯一交互形状同源 */
+.prose :not(pre) > code {
+  font-family: var(--mono);
+  /* 与代码块同一比例，跟着正文走 —— 它嵌在正文行内，写死字号会在正文变大时
+     显得偏小，pill 也会跟着扁掉。 */
+  font-size: calc(var(--prose-size) * 0.9);
+  color: var(--ink);
+  background: var(--soft);
+  border: 1px solid var(--hair);
+  border-radius: 9999px;
+  padding: 1px var(--s2);
+  /* 不用 nowrap —— 它能保住 pill 不被折断，但 C++ 模板名动辄七八十个字符
+     （proxy 那篇最长一个 794px），窄屏正文栏只有 720px，整页会被顶出横向
+     滚动。break-word 只在单词自身放不下一整行时才切，所以 `at()`、`proxy`
+     这类短 pill 依旧完整，只有超长模板名会断成两截。
+     断口不补边框（box-decoration-break 默认就是 slice），前段留左圆头、
+     后段留右圆头，读起来是一枚被行尾切开的 pill 而不是两枚。 */
+  overflow-wrap: break-word;
+}
+
+/* 代码块。
+   pre 自身是卡片 —— 无 JS 时就是最终形态，语言标记留在 pre 内左上方。
+   有 JS 时脚本套一层 .codeBlock 并把标记提上去：pre 是横向滚动容器，
+   标记若留在里面会随代码滑走（cpo 那篇溢出 206px，标记直接滚出可视区）。
+
+   语言标记不占整行 —— 代码多的文章（memory-order 有 7 个块）里，
+   每块顶上一行标签会累积成很吵的横条。 */
+.prose pre {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  padding: var(--s4) var(--s5);
+  overflow-x: auto;
+}
+/* 语言标记的字体样式与它在哪一层无关，故不写进 .prose pre 的后代选择器 ——
+   脚本会把它从 pre 内移到 .codeBlock 上，写死在 pre 后代里会在移动后失效
+   （曾因此丢了 uppercase，"CPP" 显示成 "cpp"）。 */
+.prose .code-lang {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+/* 无 JS 时留在 pre 内，自占一行 */
+.prose pre > .code-lang {
+  margin-bottom: var(--s3);
+}
+/* 有 JS：外层容器接管卡片，pre 退化为纯滚动区 */
+.prose .codeBlock {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  /* 纵向间距交给 .prose > * + * 的统一节奏，这里不自定义 */
+}
+.prose .codeBlock > pre {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+}
+/* 标记被提到外层后钉在右上角，不再占行 */
+.prose .codeBlock > .code-lang {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 7px 10px;
+  pointer-events: none;
+  z-index: 1;
+}
+.prose .codeBlock.hasCopy > .code-lang {
+  right: 30px;
+}
+.prose pre code {
+  font-family: var(--mono);
+  /* 跟着正文字号走，取 0.9 倍 —— 写死 14px 时正文抬到 18px，代码就比正文小了
+     4px，断层明显，代码块看着比周围矮一号、也显得空。等宽字体在同字号下本就
+     比中文视觉小一档，0.9 是补偿后仍略小于正文的比例。 */
+  font-size: calc(var(--prose-size) * 0.9);
+  line-height: 1.6;
+  /* 不设 color —— 交给主题的 .hljs（#adbac7）。它比正文的 --body 压低了
+     一档，是有意的：未着色的标点与标识符退后一点，token 的着色才显得出来。 */
+  display: block;
+  white-space: pre;
+}
+
+/* 只有图表向两侧溢出正文栏 —— 它是等比缩放的矢量，宽一点细节确实更清楚。
+   代码块不溢出：一度也给了它，理由是「少一次横向滚动」，但全站 250 个代码块
+   实测只有 4 个（2%）真的宽到需要滚，59% 的填充率不到一半、中位数 47%。加宽
+   后那 4 个里最宽的一行 1512px 仍然要滚，滚动并没免掉；换来的是其余 246 个
+   块右侧空出一大片、与正文的左右对齐关系也断了。为 2% 牺牲 98% 不划算。
+   溢出量取「主栏剩余空间」与一个上限的较小值，窄屏上自动归零。 */
+.prose .diagram {
+  --bleed: min(var(--s8), var(--gutter));
+  margin-left: calc(var(--bleed) * -1);
+  margin-right: calc(var(--bleed) * -1);
+}
+
+/* 复制按钮：常态几乎隐形，hover 代码块时浮现 —— 不与代码争注意力。
+   由 JS 注入，无 JS 时不存在，不会出现点了没反应的死按钮。 */
+.prose .codeBlock .copyBtn {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 2;
+  width: 24px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--mute);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+.prose .codeBlock:hover .copyBtn,
+.prose .codeBlock .copyBtn:focus-visible {
+  opacity: 1;
+}
+.prose .codeBlock .copyBtn:hover {
+  color: var(--ink);
+  border-color: var(--hair);
+}
+.prose .codeBlock .copyBtn svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+/* 复制成功：图标换成对勾并转为点缀色，2 秒后复原 */
+.prose .codeBlock .copyBtn.done {
+  color: var(--sun);
+  opacity: 1;
+}
+/* 键盘 tab 到按钮时必须可见，否则焦点像消失了 */
+.prose .codeBlock .copyBtn:focus-visible {
+  outline: 1px solid var(--sun);
+  outline-offset: 1px;
+}
+
+/* 语法高亮 —— highlight.js 官方 github-dark-dimmed 主题
+ *
+ * 早先用的是自定义配色（青/紫/绿三色相）。换成官方主题是因为它的色相分离度
+ * 更大（红/紫/蓝/浅蓝/绿），扫代码时 token 类别一眼可分；而且读者多半在
+ * GitHub 上见过这套色，认知成本更低。
+ *
+ * 已知的取舍：关键字色 #f47067 偏红，与站点点缀色 #ff7a17 在暗底上接近，
+ * 两者同屏时会有一点互相干扰 —— 用官方原色是有意的选择，不做改动。
+ *
+ * 主题正文见下，vendor 自 build/vendor/github-dark-dimmed.css。
+ */
+/* github-dark-dimmed —— highlight.js 官方主题
+ *
+ * 取自 node_modules/highlight.js/styles/github-dark-dimmed.css，vendor 到这里
+ * 而不是构建时读取：升级 highlight.js 时主题不会被意外改掉。
+ *
+ * 相对原版改了四处，都是为了与站点已有规则共存：
+ *   · 去掉 pre code.hljs 的 padding/overflow —— 布局由 solaire.css 负责
+ *   · 去掉 .hljs 的 background: #22272e —— 代码块底色用站点的 #191919
+ *   · 三处 font-weight: bold 改为提亮 —— 全站 font-weight 恒为 400
+ *   · addition/deletion 的背景色块压成半透明，以适应更深的底色
+ *
+ * 升级主题时重新跑一遍上述四步，不要手改这个文件。
+ */
+/*!
+  Theme: GitHub Dark Dimmed
+  Description: Dark dimmed theme as seen on github.com
+  Author: github.com
+  Maintainer: @Hirse
+  Updated: 2021-05-15
+
+  Colors taken from GitHub's CSS
+*/
+.hljs {
+  color: #adbac7;}
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+  /* prettylights-syntax-keyword */
+  color: #f47067
+}
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+  /* prettylights-syntax-entity */
+  color: #dcbdfb
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-variable,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+  /* prettylights-syntax-constant */
+  color: #6cb6ff
+}
+.hljs-regexp,
+.hljs-string,
+.hljs-meta .hljs-string {
+  /* prettylights-syntax-string */
+  color: #96d0ff
+}
+.hljs-built_in,
+.hljs-symbol {
+  /* prettylights-syntax-variable */
+  color: #f69d50
+}
+.hljs-comment,
+.hljs-code,
+.hljs-formula {
+  /* prettylights-syntax-comment */
+  color: #768390
+}
+.hljs-name,
+.hljs-quote,
+.hljs-selector-tag,
+.hljs-selector-pseudo {
+  /* prettylights-syntax-entity-tag */
+  color: #8ddb8c
+}
+.hljs-subst {
+  /* prettylights-syntax-storage-modifier-import */
+  color: #adbac7
+}
+.hljs-section {
+  /* prettylights-syntax-markup-heading */
+  color: #6cb6ff
+}
+.hljs-bullet {
+  /* prettylights-syntax-markup-list */
+  color: #eac55f
+}
+.hljs-emphasis {
+  /* prettylights-syntax-markup-italic */
+  color: #adbac7;
+  font-style: italic
+}
+.hljs-strong {
+  /* prettylights-syntax-markup-bold */
+  color: #ffffff
+}
+.hljs-addition {
+  /* prettylights-syntax-markup-inserted */
+  color: #b4f1b4;
+  background-color: rgba(27, 71, 33, 0.55)
+}
+.hljs-deletion {
+  /* prettylights-syntax-markup-deleted */
+  color: #ffd8d3;
+  background-color: rgba(120, 25, 27, 0.55)
+}
+.hljs-char.escape_,
+.hljs-link,
+.hljs-params,
+.hljs-property,
+.hljs-punctuation,
+.hljs-tag {
+  /* purposely ignored */
+  
+}
+
+/* ── 上下篇 ──────────────────────────────────────────────────────────── */
+.pnnav {
+  margin-top: var(--s8);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding: var(--s4) var(--s5);
+  transition: background 0.15s;
+}
+.pn.next {
+  text-align: right;
+  border-left: 1px solid var(--hair);
+}
+.pn:hover {
+  background: var(--card);
+}
+.pn .t {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--body);
+  letter-spacing: -0.2px;
+}
+.pn:hover .t {
+  color: var(--ink);
+}
+.pn:only-child {
+  grid-column: span 2;
+}
+
+.notfound {
+  padding: var(--s6) 0 96px;
+  color: var(--mute);
+}
+.notfound a {
+  color: var(--sun);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   放大浏览（lightbox）
+   遮罩层由脚本运行时建。沿用同一套色板：近黑遮罩 + hairline 描边，
+   不引入阴影与新颜色。
+   ══════════════════════════════════════════════════════════════════════ */
+/* zoom-in 光标只在脚本挂载后出现：无 JS 时 SVG 图表点了没反应，
+   显示放大光标是在骗用户（位图有 <a> 降级，不受此限） */
+.prose .diagram {
+  transition: border-color 0.15s;
+}
+/* hover 提亮自身边框，不再另加一层 outline —— 图已有常显边框，
+   套第二道轮廓会变成双线 */
+.prose .diagram:hover,
+.prose .diagram:focus-visible {
+  border-color: var(--mid);
+}
+.prose .diagram:focus-visible {
+  outline: 1px solid var(--sun);
+  outline-offset: 2px;
+}
+.prose .imgLink {
+  cursor: zoom-in;
+}
+
+html.lb-ready .prose .diagram {
+  cursor: zoom-in;
+}
+
+html.lb-open {
+  overflow: hidden;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s8) var(--s7) 96px;
+  /* 不用纯黑：留一点画布色，遮罩之下仍能感到页面存在 */
+  background: rgba(10, 10, 10, 0.94);
+}
+.lightbox.on {
+  display: flex;
+}
+.lbStage {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* 内容小于视口时居中，大于视口时可滚动 —— flex 居中会把溢出边缘裁掉，
+     故用 grid + place-items 配合 min-content 轨道 */
+  display: grid;
+  place-items: center;
+  grid-auto-rows: min-content;
+  scrollbar-width: thin;
+}
+.lbStage::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.lbStage::-webkit-scrollbar-thumb {
+  background: var(--mid);
+  border-radius: 9999px;
+}
+.lbStage::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* 位图放大后按原始像素显示 —— 火焰图原图 2048px 宽，正文里只有 680px，
+   放大的意义正在于看清那些细节。超出视口时容器可滚动。 */
+.lbImg {
+  max-width: none;
+  margin: auto;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+}
+/* SVG 是矢量，按视口等比撑开即可 */
+.lbSvg {
+  width: min(1200px, 92vw);
+  height: auto;
+  margin: auto;
+  /* 与正文里一致：SVG 自带 #191919 底色，配一道边框才有边界 */
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+}
+
+.lbClose,
+.lbNav {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--canvas);
+  border: 1px solid var(--hair);
+  border-radius: 9999px;
+  color: var(--body);
+  font-size: 18px;
+  font-family: var(--mono);
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.lbClose:hover,
+.lbNav:hover {
+  color: var(--ink);
+  border-color: var(--mid);
+}
+.lbClose {
+  top: var(--s5);
+  right: var(--s5);
+}
+.lbPrev {
+  left: var(--s4);
+  top: 50%;
+  margin-top: -20px;
+}
+.lbNext {
+  right: var(--s4);
+  top: 50%;
+  margin-top: -20px;
+}
+.lbNav[hidden] {
+  display: none;
+}
+
+.lbBar {
+  position: absolute;
+  left: var(--s7);
+  right: var(--s7);
+  bottom: var(--s6);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--hair);
+}
+.lbCap {
+  color: var(--body);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 20px;
+}
+.lbIdx {
+  flex: none;
+  color: var(--sun);
+}
+
+@media (max-width: 768px) {
+  .lightbox {
+    padding: var(--s7) var(--s3) 88px;
+  }
+  .lbPrev {
+    left: var(--s2);
+  }
+  .lbNext {
+    right: var(--s2);
+  }
+  .lbBar {
+    left: var(--s4);
+    right: var(--s4);
+    flex-direction: column;
+    gap: var(--s1);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   页脚
+   ══════════════════════════════════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--hair);
+  padding: var(--s5) 0 var(--s7);
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+footer .l {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   响应式：单一断点 768px（与设计文档一致）
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1180px) {
+  /* 这一段（960–1180px）侧栏已收起成 48px 窄条，但目录轴仍占 200px + 48px
+     间距、内容区左右还各有 64px padding，正文被挤到 600px —— 18px 字号下
+     只有 33 字/行，比 768px 手机还窄。三处一起收，正文能多拿约 116px。 */
+  :root {
+    --axis-w: 148px;
+    --wrap-pad: var(--s6);
+  }
+  .entryBody {
+    gap: var(--s5);
+  }
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s8);
+  }
+  .sundial {
+    justify-self: start;
+  }
+  .sundial .anno {
+    left: 0;
+    top: calc(100% + 12px);
+  }
+}
+
+@media (max-width: 960px) {
+  :root {
+    --rail-w: 0px;
+  }
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  main {
+    grid-column: 1;
+  }
+  /* 侧栏改为顶部横条，不做汉堡菜单：5 个入口横排放得下 */
+  .rail {
+    position: static;
+    width: auto;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--hair);
+    padding: var(--s5) var(--s5);
+    display: block;
+  }
+  .rail .formula {
+    display: none;
+  }
+  /* 横条上篝火挪到右上角，与站名同一行 —— 竖排会把横条撑高 */
+  .railFoot,
+  html.rail-collapsed .railFoot {
+    position: absolute;
+    top: var(--s5);
+    right: var(--s5);
+    /* 必须带上 html.rail-collapsed 一起写：收起态那条规则给了 width:100%，
+       特异性 (0,2,1) 高于裸 .railFoot 的 (0,1,0)，而 media query 并不提升
+       特异性。不重置的话这个 absolute 元素宽 768px、从 left:-24 起画，把
+       整条顶栏拽偏 24px —— 头盔被切掉左边一列、导航第一个圆点半个在屏外，
+       篝火漂到横条中间。 */
+    width: auto;
+    align-items: flex-end;
+  }
+  .bonfire,
+  html.rail-collapsed .bonfire {
+    width: 29px;
+    height: 33px;
+    /* .railFoot 收起态是 flex 容器，篝火会被 100% 宽的父级拉伸；改 absolute
+       后仍需显式钉死尺寸，否则整幅 4 帧宽（116px）的精灵图会露出不止一帧。 */
+    flex: none;
+    overflow: hidden;
+  }
+  /* 侧栏已是顶部横条，收起无意义：强制展开并隐藏按钮。
+     下面这串 html.rail-collapsed 覆盖是逐条把收起态还原成展开态 —— 收起态
+     那些规则是为 48px 竖窄条写的，在横条形态下全都不对。 */
+  .railToggle {
+    display: none;
+  }
+  /* 内边距必须还原：收起态把 .rail 的横向 padding 抹成 0（竖窄条上正确），
+     横条形态下会让头盔与导航贴死屏幕左边缘 —— 头盔左边一列被切掉、导航
+     第一个圆点半个在屏外。 */
+  html.rail-collapsed .rail {
+    padding: var(--s5) var(--s5);
+  }
+  html.rail-collapsed .railBody {
+    display: block;
+  }
+  html.rail-collapsed .rail .markText {
+    display: flex;
+  }
+  html.rail-collapsed .railTop {
+    width: auto;
+    overflow: visible;
+  }
+  html.rail-collapsed .rail .mark {
+    justify-content: flex-start;
+    margin-top: 0;
+  }
+  html.rail-collapsed .rail .helm {
+    height: 34px;
+  }
+  html.rail-collapsed {
+    --rail-w: 0px;
+  }
+  .vnav {
+    margin-top: var(--s4);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 var(--s5);
+  }
+  .vnav a {
+    border-top: 0;
+    padding: var(--s2) 0;
+  }
+  .vnav a:last-child {
+    border-bottom: 0;
+  }
+  .wrap {
+    padding: 0 var(--s5);
+  }
+  .yearblock,
+  .entryBody {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s5);
+  }
+  .yearblock .axis,
+  .entryBody .side {
+    position: static;
+    display: flex;
+    align-items: baseline;
+    gap: var(--s4);
+    max-height: none;
+  }
+  .yearblock .axis .ring {
+    margin-top: 0;
+  }
+  .yearblock .axis .meta {
+    margin-top: 0;
+  }
+  /* 目录在窄屏折叠为可展开块，避免挤占正文 */
+  .entryBody .side {
+    display: block;
+  }
+  .toc {
+    border: 1px solid var(--hair);
+    border-radius: 8px;
+    padding: var(--s4) var(--s5);
+  }
+  .position {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--s7) 0 var(--s6);
+  }
+  .hero h1 {
+    font-size: 40px;
+    line-height: 44px;
+    letter-spacing: -1px;
+  }
+  .pageHead h1,
+  .entryHead h1 {
+    font-size: 32px;
+    line-height: 38px;
+    letter-spacing: -0.6px;
+  }
+  .prose h2 {
+    font-size: 26px;
+    line-height: 34px;
+  }
+  .prose h3 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  /* 太阳按视口缩放，保持圆形与刻针关系 */
+  .sundial {
+    width: min(420px, calc(100vw - var(--s5) * 2));
+    height: min(420px, calc(100vw - var(--s5) * 2));
+  }
+  .sundial .disc2 {
+    inset: 13%;
+  }
+  .sundial .disc3 {
+    inset: 36%;
+  }
+  .sundial .core .num {
+    font-size: 64px;
+    line-height: 64px;
+    letter-spacing: -1.6px;
+  }
+  .sundial .legend {
+    display: none;
+  }
+  .facts {
+    grid-template-columns: repeat(2, auto);
+    gap: var(--s4) var(--s6);
+  }
+  /* 索引行：日期与标签下沉一行，标题不再截断 */
+  .row {
+    grid-template-columns: 12px 48px minmax(0, 1fr);
+    row-gap: var(--s2);
+  }
+  .row .t {
+    white-space: normal;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .row .tags {
+    grid-column: 2 / -1;
+    flex-wrap: wrap;
+  }
+  .row .d {
+    grid-column: 2 / -1;
+    text-align: left;
+  }
+  .pnnav {
+    grid-template-columns: 1fr;
+  }
+  .pn.next {
+    text-align: left;
+    border-left: 0;
+    border-top: 1px solid var(--hair);
+  }
+  .prose pre {
+    padding: var(--s3) var(--s4);
+  }
+  footer {
+    padding-bottom: var(--s6);
+  }
+}
+
+/* 打印：黑底不适合打印，唯一允许的浅色场景 */
+@media print {
+  .rail,
+  .toc,
+  .position,
+  .pnnav,
+  .seclabel,
+  .sundial {
+    display: none;
+  }
+  body,
+  html {
+    background: #fff;
+    color: #000;
+  }
+  .shell,
+  .entryBody {
+    display: block;
+  }
+  .prose a {
+    color: #000;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    transition: none !important;
+  }
+  /* 动画也要停 —— 只关 transition 会漏掉篝火那种 animation 驱动的效果。
+     停在第一帧（直立的火），而不是整个隐藏：图形本身仍是内容。 */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
+}

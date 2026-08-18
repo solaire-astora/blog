@@ -1,0 +1,10 @@
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+public/
+
+# Obsidian 的工作区与插件配置。原先没有忽略，导致这些文件被当作静态资源
+# 拷进 public/ 并随 rsync 部署上线（含图床插件的 data.json）。
+.obsidian/
+source/_posts/.obsidian/

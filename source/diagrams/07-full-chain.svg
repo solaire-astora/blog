@@ -1,0 +1,129 @@
+<svg viewBox="0 0 680 872" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="proxy-invoke-chain-title proxy-invoke-chain-desc">
+  <title id="proxy-invoke-chain-title">at(int) 在 proxy 中的完整调用链</title>
+  <desc id="proxy-invoke-chain-desc">纵向调用链：pro::proxy 通过 indirect_accessor 与 MemAt::accessor 暴露 at 方法，经 proxy_invoke 进入类型擦除区的两层 invoke_dispatch，最终回到 MemAt 的 operator() 并落在 std::map::at 上。</desc>
+
+  <defs>
+    <marker id="pic-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+    <marker id="pic-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ff7a17"/>
+    </marker>
+  </defs>
+
+  <!-- ── 画布 ───────────────────────────────────────────────── -->
+  <rect width="100%" height="100%" fill="#191919"/>
+
+  <!-- ── zone：类型擦除区（先画，z-order 在箭头与节点之下） ──── -->
+  <rect x="16" y="352" width="648" height="268" rx="8"
+        fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.10)"
+        stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="264" y="344" width="212" height="16" fill="#191919"/>
+  <text x="272" y="356" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace"
+        letter-spacing="1.2">TYPE ERASURE &#183; proxy_invoke</text>
+
+  <!-- ── 箭头（先画，z-order 在节点之下） ───────────────────── -->
+  <line x1="96" y1="160" x2="96" y2="192" stroke="#7d8187" stroke-width="1.2" marker-end="url(#pic-arrow)"/>
+  <line x1="96" y1="244" x2="96" y2="276" stroke="#7d8187" stroke-width="1.2" marker-end="url(#pic-arrow)"/>
+  <line x1="96" y1="328" x2="96" y2="388" stroke="#7d8187" stroke-width="1.2" marker-end="url(#pic-arrow)"/>
+  <line x1="96" y1="440" x2="96" y2="472" stroke="#7d8187" stroke-width="1.2" marker-end="url(#pic-arrow)"/>
+  <line x1="96" y1="524" x2="96" y2="556" stroke="#7d8187" stroke-width="1.2" marker-end="url(#pic-arrow)"/>
+  <line x1="96" y1="608" x2="96" y2="660" stroke="#7d8187" stroke-width="1.2" marker-end="url(#pic-arrow)"/>
+  <line x1="96" y1="712" x2="96" y2="744" stroke="#ff7a17" stroke-width="1.2" marker-end="url(#pic-arrow-accent)"/>
+
+  <!-- ── 箭头标签（mask 距连线 16px；须落在节点之外的空白段，
+         否则会被后画的节点填充裁切） ─────────────────────────── -->
+  <rect x="108" y="180" width="36" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="189" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">ia_</text>
+
+  <rect x="108" y="252" width="76" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="261" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">INHERITS</text>
+
+  <rect x="108" y="344" width="104" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="353" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">proxy_invoke</text>
+
+  <rect x="108" y="448" width="100" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="457" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">META FN PTR</text>
+
+  <rect x="108" y="532" width="112" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="541" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">CAST TO map&amp;</text>
+
+  <rect x="108" y="624" width="88" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="633" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">D{}(args...)</text>
+
+  <rect x="108" y="720" width="72" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="729" fill="#ff7a17" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">.at(idx)</text>
+
+  <!-- ══ N1 · pro::proxy<Dictionary> ═════════════════════════ -->
+  <rect x="32" y="48" width="400" height="128" rx="8" fill="#191919"/>
+  <rect x="32" y="48" width="400" height="128" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="70" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">pro::proxy&lt;Dictionary&gt;</text>
+  <line x1="32" y1="82" x2="432" y2="82" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="100" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">- ia_   : facade_traits&lt;Dictionary&gt;::indirect_accessor</text>
+  <text x="48" y="116" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">- meta_ : meta_ptr&lt;...&gt;</text>
+  <text x="48" y="132" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">- ptr_  : std::byte[max_size]</text>
+  <line x1="32" y1="144" x2="432" y2="144" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="164" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ operator-&gt;()    + operator*()</text>
+
+  <!-- ══ N2 · indirect_accessor ══════════════════════════════ -->
+  <rect x="32" y="192" width="376" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="192" width="376" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="214" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">details::facade_traits&lt;Dictionary&gt;::indirect_accessor</text>
+  <line x1="32" y1="226" x2="408" y2="226" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="239" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ══ N3 · MemAt::accessor ═══════════════════════════════ -->
+  <rect x="32" y="276" width="576" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="276" width="576" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="298" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">MemAt::accessor&lt;Dictionary, conv_impl&lt;false, MemAt, std::string(int)&gt;, std::string(int)&gt;</text>
+  <line x1="32" y1="310" x2="608" y2="310" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="323" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ══ Z1 · proxy_invoke ══════════════════════════════════ -->
+  <rect x="40" y="388" width="392" height="52" rx="8" fill="#191919"/>
+  <rect x="40" y="388" width="392" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="56" y="410" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">proxy_invoke&lt;conv_impl&lt;false, MemAt, std::string(int)&gt;&gt;()</text>
+  <line x1="40" y1="422" x2="432" y2="422" stroke="#212327" stroke-width="1"/>
+  <text x="56" y="435" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ pro::proxy&lt;Dictionary&gt;&amp;    + int</text>
+
+  <!-- ══ Z2 · 擦除签名的 dispatch（收 std::byte&） ══════════ -->
+  <rect x="40" y="472" width="440" height="52" rx="8" fill="#191919"/>
+  <rect x="40" y="472" width="440" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="56" y="494" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">invoke_dispatch&lt;MemAt, map&lt;int, std::string&gt;*, std::string, int&gt;()</text>
+  <line x1="40" y1="506" x2="480" y2="506" stroke="#212327" stroke-width="1"/>
+  <text x="56" y="519" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::byte&amp;    + int</text>
+
+  <!-- ══ Z3 · 还原类型后的 dispatch（收 map&） ══════════════ -->
+  <rect x="40" y="556" width="432" height="52" rx="8" fill="#191919"/>
+  <rect x="40" y="556" width="432" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="56" y="578" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">invoke_dispatch&lt;MemAt, std::string, map&lt;int, std::string&gt;&amp;, int&gt;()</text>
+  <line x1="40" y1="590" x2="472" y2="590" stroke="#212327" stroke-width="1"/>
+  <text x="56" y="603" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ map&lt;int, std::string&gt;&amp;    + int</text>
+
+  <!-- ══ N5 · MemAt（焦点：绕一圈回到起点） ════════════════ -->
+  <rect x="32" y="660" width="304" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="660" width="304" height="52" rx="8" fill="rgba(255,122,23,0.06)" stroke="#ff7a17" stroke-width="1"/>
+  <text x="48" y="682" fill="#ff7a17" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">MemAt</text>
+  <line x1="32" y1="694" x2="336" y2="694" stroke="rgba(255,122,23,0.25)" stroke-width="1"/>
+  <text x="48" y="707" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ operator()(map&lt;int, std::string&gt;&amp;, int)</text>
+
+  <!-- ══ N6 · std::map（最终落点） ═════════════════════════ -->
+  <rect x="32" y="744" width="280" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="744" width="280" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="766" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">std::map&lt;int, std::string&gt;</text>
+  <line x1="32" y1="778" x2="312" y2="778" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="791" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ── 图例（底部横条） ──────────────────────────────────── -->
+  <line x1="32" y1="828" x2="648" y2="828" stroke="#212327" stroke-width="0.8"/>
+  <text x="32" y="848" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.4">LEGEND</text>
+  <line x1="112" y1="845" x2="136" y2="845" stroke="#7d8187" stroke-width="1.2"/>
+  <text x="144" y="848" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">调用路径</text>
+  <rect x="216" y="838" width="24" height="14" rx="2" fill="none"
+        stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="248" y="848" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">类型擦除边界</text>
+  <rect x="360" y="839" width="12" height="12" rx="2" fill="rgba(255,122,23,0.06)" stroke="#ff7a17" stroke-width="1"/>
+  <text x="380" y="848" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">绕回起点：约定的落地实现</text>
+</svg>

@@ -1,0 +1,35 @@
+<svg viewBox="0 0 680 248" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dictionary-type-title dictionary-type-desc">
+  <title id="dictionary-type-title">Dictionary 的类型简略结构</title>
+  <desc id="dictionary-type-desc">Dictionary 继承自 details::facade_impl，后者在编译期把单个 conv_impl&lt;false, MemAt, std::string(int)&gt; 组装进 convention_types 这个 tuple。</desc>
+
+  <defs>
+    <marker id="d4-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+  </defs>
+
+  <!-- ── 画布 ───────────────────────────────────────────────── -->
+  <rect width="100%" height="100%" fill="#191919"/>
+
+  <!-- ── 箭头（先画，z-order 在节点之下） ───────────────────── -->
+  <line x1="112" y1="100" x2="112" y2="132" stroke="#7d8187" stroke-width="1.2" marker-end="url(#d4-arrow)"/>
+
+  <!-- ── 箭头标签（mask 距连线 12px，落在两个节点框之外） ──── -->
+  <rect x="124" y="108" width="76" height="12" rx="2" fill="#191919"/>
+  <text x="128" y="117" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">INHERITS</text>
+
+  <!-- ══ N1 · Dictionary ════════════════════════════════════ -->
+  <rect x="32" y="48" width="160" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="48" width="160" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="70" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">Dictionary</text>
+  <line x1="32" y1="82" x2="192" y2="82" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="95" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">无自有成员</text>
+
+  <!-- ══ N2 · details::facade_impl ══════════════════════════ -->
+  <rect x="32" y="132" width="616" height="84" rx="8" fill="#191919"/>
+  <rect x="32" y="132" width="616" height="84" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="154" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">details::facade_impl&lt;std::tuple&lt;conv_impl&lt;false, MemAt, std::string(int)&gt;&gt;, std::tuple&lt;&gt;, C&gt;</text>
+  <line x1="32" y1="166" x2="648" y2="166" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="184" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">using Cs = conv_impl&lt;false, MemAt, std::string(int)&gt;;</text>
+  <text x="48" y="204" fill="#ff7a17" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">using convention_types = std::tuple&lt;conv_impl&lt;false, MemAt, std::string(int)&gt;&gt;;</text>
+</svg>

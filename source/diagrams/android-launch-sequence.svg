@@ -1,0 +1,201 @@
+<svg viewBox="0 0 680 780" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="androidLaunchTitle androidLaunchDesc">
+  <title id="androidLaunchTitle">UE4 在 Android 上的启动时序</title>
+  <desc id="androidLaunchDesc">时序图：GameActivity 的 onCreate 调用 loadNativeCode，经 JNI 进入 android_native_app_glue；glue 创建 GameThread，GameThread 回调 android_app_entry，随后调用 android_main 跨入 UE4 的 LaunchAndroid；LaunchAndroid 创建 AndroidEventThread 处理 CMD 与 input 事件，并执行 AndroidMain 初始化引擎。</desc>
+
+  <defs>
+    <marker id="alsArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+    <marker id="alsArrowSun" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ff7a17"/>
+    </marker>
+    <!-- 空心箭头 = 创建线程：调用方不等它返回 -->
+    <marker id="alsArrowOpen" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polyline points="1 1, 8 3.5, 1 6" fill="none" stroke="#7d8187" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <rect width="680" height="780" fill="#191919"/>
+
+  <!-- ═══ 区域框（最先画，压在最底层）
+       两框高度不同是有意的：Android 侧交出 android_main() 后不再有活动，
+       UE4 侧的两条线程则一直跑到进程结束。 ═════════════════════════ -->
+  <rect x="16" y="48" width="400" height="452" rx="8"
+        fill="#ffffff" fill-opacity="0.015"
+        stroke="#ffffff" stroke-opacity="0.10" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="32" y="40" width="124" height="16" fill="#191919"/>
+  <text x="40" y="52" fill="#7d8187" font-size="8" letter-spacing="1.2"
+        font-family="'JetBrains Mono', ui-monospace, monospace">ANDROID SDK &amp; NDK</text>
+
+  <rect x="428" y="48" width="236" height="616" rx="8"
+        fill="#ffffff" fill-opacity="0.015"
+        stroke="#ffffff" stroke-opacity="0.10" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="444" y="40" width="40" height="16" fill="#191919"/>
+  <text x="452" y="52" fill="#7d8187" font-size="8" letter-spacing="1.2"
+        font-family="'JetBrains Mono', ui-monospace, monospace">UE4</text>
+
+  <!-- ═══ 生命线 ═══════════════════════════════════════════════ -->
+  <line x1="64"  y1="116" x2="64"  y2="500" stroke="#212327" stroke-width="1" stroke-dasharray="3,4"/>
+  <line x1="148" y1="116" x2="148" y2="500" stroke="#212327" stroke-width="1" stroke-dasharray="3,4"/>
+  <line x1="248" y1="116" x2="248" y2="500" stroke="#212327" stroke-width="1" stroke-dasharray="3,4"/>
+  <line x1="364" y1="116" x2="364" y2="500" stroke="#212327" stroke-width="1" stroke-dasharray="3,4"/>
+  <line x1="484" y1="116" x2="484" y2="664" stroke="#212327" stroke-width="1" stroke-dasharray="3,4"/>
+  <line x1="616" y1="116" x2="616" y2="664" stroke="#212327" stroke-width="1" stroke-dasharray="3,4"/>
+
+  <!-- ═══ 激活条：该参与者持有控制权的区间 ══════════════════════ -->
+  <rect x="60"  y="148" width="8" height="168" fill="#26282c" stroke="#212327" stroke-width="0.8"/>
+  <rect x="144" y="244" width="8" height="72"  fill="#26282c" stroke="#212327" stroke-width="0.8"/>
+  <rect x="244" y="280" width="8" height="190" fill="#26282c" stroke="#212327" stroke-width="0.8"/>
+  <rect x="360" y="356" width="8" height="56"  fill="#26282c" stroke="#212327" stroke-width="0.8"/>
+  <rect x="480" y="452" width="8" height="196" fill="#26282c" stroke="#212327" stroke-width="0.8"/>
+  <rect x="612" y="496" width="8" height="152" fill="#26282c" stroke="#212327" stroke-width="0.8"/>
+
+  <!-- ═══ 消息（先于结点画，让线落在盒子之下） ═══════════════════ -->
+
+  <!-- 1 · GameActivity 自调用 onCreate() -->
+  <path d="M 68,164 H 96 Q 104,164 104,172 V 176 Q 104,184 96,184 H 72"
+        fill="none" stroke="#7d8187" stroke-width="1.2" marker-end="url(#alsArrow)"/>
+  <rect x="112" y="165" width="56" height="12" fill="#191919"/>
+  <text x="112" y="174" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">onCreate()</text>
+
+  <!-- 2 · GameActivity 自调用 loadNativeCode() -->
+  <path d="M 68,200 H 96 Q 104,200 104,208 V 212 Q 104,220 96,220 H 72"
+        fill="none" stroke="#7d8187" stroke-width="1.2" marker-end="url(#alsArrow)"/>
+  <rect x="112" y="201" width="84" height="12" fill="#191919"/>
+  <text x="112" y="210" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">loadNativeCode()</text>
+
+  <!-- 3 · GameActivity → JNI：Java 侧到 native 实现 -->
+  <line x1="68" y1="244" x2="140" y2="244" stroke="#7d8187" stroke-width="1.2" marker-end="url(#alsArrow)"/>
+  <rect x="72" y="224" width="118" height="12" fill="#191919"/>
+  <text x="72" y="233" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">loadNativeCode_Native()</text>
+
+  <!-- 4 · JNI → glue -->
+  <line x1="152" y1="280" x2="240" y2="280" stroke="#7d8187" stroke-width="1.2" marker-end="url(#alsArrow)"/>
+  <rect x="156" y="260" width="132" height="12" fill="#191919"/>
+  <text x="156" y="269" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">ANativeActivity_Oncreate()</text>
+
+  <!-- 5 · glue 自调用 android_app_create() -->
+  <path d="M 252,300 H 280 Q 288,300 288,308 V 312 Q 288,320 280,320 H 256"
+        fill="none" stroke="#7d8187" stroke-width="1.2" marker-end="url(#alsArrow)"/>
+  <rect x="296" y="301" width="104" height="12" fill="#191919"/>
+  <text x="296" y="310" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">android_app_create()</text>
+
+  <!-- 6 · glue → GameThread：创建线程，不等返回 -->
+  <line x1="252" y1="356" x2="356" y2="356" stroke="#7d8187" stroke-width="1.2"
+        stroke-dasharray="4,3" marker-end="url(#alsArrowOpen)"/>
+  <rect x="256" y="336" width="84" height="12" fill="#191919"/>
+  <text x="256" y="345" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">pthread_create()</text>
+
+  <!-- 7 · GameThread → glue：新线程从这里进入 glue 的代码 -->
+  <line x1="360" y1="392" x2="256" y2="392" stroke="#7d8187" stroke-width="1"
+        stroke-dasharray="4,3" marker-end="url(#alsArrow)"/>
+  <rect x="256" y="372" width="98" height="12" fill="#191919"/>
+  <text x="256" y="381" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">android_app_entry()</text>
+
+  <!-- 8 · glue → LaunchAndroid：跨出 Android 侧，进入 UE4。全图题眼 -->
+  <line x1="252" y1="452" x2="476" y2="452" stroke="#ff7a17" stroke-width="1.2" marker-end="url(#alsArrowSun)"/>
+  <rect x="272" y="432" width="74" height="12" fill="#191919"/>
+  <text x="272" y="441" fill="#ff7a17" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">android_main()</text>
+
+  <!-- 9 · LaunchAndroid → AndroidEventThread：创建事件线程 -->
+  <line x1="488" y1="496" x2="608" y2="496" stroke="#7d8187" stroke-width="1.2"
+        stroke-dasharray="4,3" marker-end="url(#alsArrowOpen)"/>
+  <rect x="492" y="476" width="84" height="12" fill="#191919"/>
+  <text x="492" y="485" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">pthread_create()</text>
+
+  <!-- 10 · LaunchAndroid 自调用 AndroidMain() -->
+  <path d="M 488,536 H 516 Q 524,536 524,544 V 548 Q 524,556 516,556 H 492"
+        fill="none" stroke="#7d8187" stroke-width="1.2" marker-end="url(#alsArrow)"/>
+  <rect x="532" y="537" width="70" height="12" fill="#191919"/>
+  <text x="532" y="546" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">AndroidMain()</text>
+
+  <!-- 11 · AndroidEventThread 自调用 AndroidProcessEvents()
+          环朝右开：22 个字符的标签得占住左边那条走廊。 -->
+  <path d="M 620,600 H 640 Q 648,600 648,608 V 612 Q 648,620 640,620 H 624"
+        fill="none" stroke="#7d8187" stroke-width="1.2" marker-end="url(#alsArrow)"/>
+  <rect x="494" y="601" width="112" height="12" fill="#191919"/>
+  <text x="496" y="610" fill="#dadbdf" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">AndroidProcessEvents()</text>
+
+  <!-- ═══ 参与者盒子（后画，盖住穿过的生命线） ═══════════════════ -->
+  <rect x="20" y="80" width="88" height="36" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="64" y="96" fill="#ffffff" font-size="8" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">GameActivity</text>
+  <text x="64" y="108" fill="#7d8187" font-size="7" text-anchor="middle" letter-spacing="0.8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">JAVA</text>
+
+  <rect x="116" y="80" width="64" height="36" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="148" y="96" fill="#ffffff" font-size="9" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">JNI</text>
+  <text x="148" y="108" fill="#7d8187" font-size="7" text-anchor="middle" letter-spacing="0.8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">NATIVE</text>
+
+  <rect x="188" y="80" width="120" height="36" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="248" y="96" fill="#ffffff" font-size="8" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">android_native</text>
+  <text x="248" y="108" fill="#ffffff" font-size="8" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">_app_glue</text>
+
+  <rect x="320" y="80" width="88" height="36" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="364" y="96" fill="#ffffff" font-size="8" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">GameThread</text>
+  <text x="364" y="108" fill="#7d8187" font-size="7" text-anchor="middle" letter-spacing="0.8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">NEW THREAD</text>
+
+  <!-- LaunchAndroid：引擎侧真正的入口。橙色只给它和 android_main() -->
+  <rect x="436" y="80" width="96" height="36" rx="8"
+        fill="#ff7a17" fill-opacity="0.06" stroke="#ff7a17" stroke-width="1"/>
+  <text x="484" y="96" fill="#ff7a17" font-size="8" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">LaunchAndroid</text>
+  <text x="484" y="108" fill="#7d8187" font-size="7" text-anchor="middle" letter-spacing="0.8"
+        font-family="'JetBrains Mono', ui-monospace, monospace">UE4 ENTRY</text>
+
+  <rect x="572" y="80" width="88" height="36" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="616" y="96" fill="#ffffff" font-size="8" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">Android</text>
+  <text x="616" y="108" fill="#ffffff" font-size="8" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace">EventThread</text>
+
+  <!-- ═══ 注解（hairline 卡片；原图的黄色便签不进这套配色）
+       各自贴着被标注的对象，引线短到不需要追。 ══════════════════ -->
+  <line x1="416" y1="546" x2="476" y2="546" stroke="#363a3f" stroke-width="0.8" stroke-dasharray="2,3"/>
+  <rect x="296" y="526" width="120" height="40" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="308" y="542" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">AndroidMain 中</text>
+  <text x="308" y="556" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">初始化 UE 引擎</text>
+
+  <line x1="616" y1="652" x2="616" y2="680" stroke="#363a3f" stroke-width="0.8" stroke-dasharray="2,3"/>
+  <rect x="560" y="680" width="112" height="40" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="572" y="696" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">监听并处理</text>
+  <text x="572" y="710" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">CMD 与 input 事件</text>
+
+  <!-- ═══ 图例 ═══════════════════════════════════════════════════ -->
+  <line x1="32" y1="744" x2="648" y2="744" stroke="#212327" stroke-width="0.8"/>
+  <text x="32" y="763" fill="#7d8187" font-size="8" letter-spacing="1.4"
+        font-family="'JetBrains Mono', ui-monospace, monospace">LEGEND</text>
+
+  <line x1="96" y1="760" x2="118" y2="760" stroke="#7d8187" stroke-width="1.2"/>
+  <polygon points="118,757 124,760 118,763" fill="#7d8187"/>
+  <text x="132" y="763" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">同步调用</text>
+
+  <line x1="200" y1="760" x2="222" y2="760" stroke="#7d8187" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <polyline points="222,757 228,760 222,763" fill="none" stroke="#7d8187" stroke-width="1.2"/>
+  <text x="236" y="763" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">创建线程</text>
+
+  <line x1="304" y1="760" x2="326" y2="760" stroke="#7d8187" stroke-width="1" stroke-dasharray="4,3"/>
+  <polygon points="326,757 332,760 326,763" fill="#7d8187"/>
+  <text x="340" y="763" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">新线程进入</text>
+
+  <line x1="424" y1="760" x2="446" y2="760" stroke="#ff7a17" stroke-width="1.2"/>
+  <polygon points="446,757 452,760 446,763" fill="#ff7a17"/>
+  <text x="460" y="763" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">跨入 UE4 引擎侧</text>
+</svg>

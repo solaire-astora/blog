@@ -1,0 +1,68 @@
+<svg viewBox="0 0 680 428" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="accessor-at-title accessor-at-desc">
+  <title id="accessor-at-title">dictionary-&gt;at(1) 实际落在 MemAt::accessor::at</title>
+  <desc id="accessor-at-desc">纵向链路：pro::proxy&lt;Dictionary&gt; 上的 dictionary-&gt;at(1) 经一个尚未揭晓的中间类型，到达本节揭晓的 MemAt::accessor&lt;__F, __C, std::string(int)&gt;，再连向 std::map&lt;int, std::string&gt;::at；三段连接关系此时仍未确定。</desc>
+
+  <defs>
+    <marker id="d3-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+  </defs>
+
+  <!-- ── 画布 ───────────────────────────────────────────────── -->
+  <rect width="100%" height="100%" fill="#191919"/>
+
+  <!-- ── 箭头（先画，z-order 在节点之下；三段均为未知环节） ─── -->
+  <line x1="96" y1="100" x2="96" y2="132" stroke="#7d8187" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#d3-arrow)"/>
+  <line x1="96" y1="184" x2="96" y2="216" stroke="#7d8187" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#d3-arrow)"/>
+  <line x1="96" y1="268" x2="96" y2="300" stroke="#7d8187" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#d3-arrow)"/>
+
+  <!-- ── 箭头标签（mask 距连线 12px；落在节点之外的空白段） ─── -->
+  <rect x="108" y="108" width="28" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="117" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">???</text>
+
+  <rect x="108" y="192" width="28" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="201" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">???</text>
+
+  <rect x="108" y="276" width="28" height="12" rx="2" fill="#191919"/>
+  <text x="112" y="285" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">???</text>
+
+  <!-- ══ N1 · pro::proxy<Dictionary>（调用起点） ═════════════ -->
+  <rect x="32" y="48" width="176" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="48" width="176" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="70" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">pro::proxy&lt;Dictionary&gt;</text>
+  <line x1="32" y1="82" x2="208" y2="82" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="95" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">dictionary-&gt;at(1)</text>
+
+  <!-- ══ N2 · 尚未揭晓的中间类型 ════════════════════════════ -->
+  <rect x="32" y="132" width="176" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="132" width="176" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="48" y="154" fill="#7d8187" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">???</text>
+  <line x1="32" y1="166" x2="208" y2="166" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="179" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ══ N3 · MemAt::accessor（本节揭晓的一环） ═════════════ -->
+  <rect x="32" y="216" width="296" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="216" width="296" height="52" rx="8" fill="rgba(255,122,23,0.06)" stroke="#ff7a17" stroke-width="1"/>
+  <text x="48" y="238" fill="#ff7a17" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">MemAt::accessor&lt;__F, __C, std::string(int)&gt;</text>
+  <line x1="32" y1="250" x2="328" y2="250" stroke="rgba(255,122,23,0.25)" stroke-width="1"/>
+  <text x="48" y="263" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ══ N4 · std::map（最终落点） ══════════════════════════ -->
+  <rect x="32" y="300" width="224" height="52" rx="8" fill="#191919"/>
+  <rect x="32" y="300" width="224" height="52" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="48" y="322" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">std::map&lt;int, std::string&gt;</text>
+  <line x1="32" y1="334" x2="256" y2="334" stroke="#212327" stroke-width="1"/>
+  <text x="48" y="347" fill="#dadbdf" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">+ std::string at(int)</text>
+
+  <!-- ── 图例（底部横条） ──────────────────────────────────── -->
+  <line x1="32" y1="384" x2="648" y2="384" stroke="#212327" stroke-width="0.8"/>
+  <text x="32" y="404" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.4">LEGEND</text>
+  <line x1="112" y1="401" x2="136" y2="401" stroke="#7d8187" stroke-width="1.2" stroke-dasharray="4,4"/>
+  <text x="144" y="404" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">未知的调用环节</text>
+  <rect x="216" y="394" width="24" height="14" rx="2" fill="none"
+        stroke="#212327" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="248" y="404" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">尚未揭晓的类型</text>
+  <rect x="320" y="395" width="12" height="12" rx="2" fill="rgba(255,122,23,0.06)" stroke="#ff7a17" stroke-width="1"/>
+  <text x="340" y="404" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">本节揭晓的一环</text>
+</svg>

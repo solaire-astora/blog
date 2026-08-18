@@ -1,0 +1,115 @@
+<svg viewBox="0 0 680 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="memory-order-reorder-title memory-order-reorder-desc">
+  <title id="memory-order-reorder-title">CPU 乱序执行：无依赖指令被提前</title>
+  <desc id="memory-order-reorder-desc">上下两块共用同一条时间刻度。顺序执行时 LDR R1,[R0]、ADD R2,R1,R1、ADD R4, R3, R3 依次排列，不依赖 R1 的 ADD R4, R3, R3 只能排在最后干等；乱序执行时 ADD R4, R3, R3 另起一行、左端与 LDR 对齐，与访存延迟重叠而被提前执行。</desc>
+
+  <defs>
+    <marker id="reorder-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7d8187"/>
+    </marker>
+  </defs>
+
+  <!-- ── 画布 ───────────────────────────────────────────────── -->
+  <rect width="100%" height="100%" fill="#191919"/>
+
+  <!-- ── 时间轴（横向位置 = 时间） ──────────────────────────── -->
+  <text x="40" y="24" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace"
+        letter-spacing="1.2">TIME &#8594;</text>
+  <line x1="40" y1="32" x2="656" y2="32" stroke="#7d8187" stroke-width="1.2" marker-end="url(#reorder-arrow)"/>
+
+  <!-- ── zone A：顺序执行 ───────────────────────────────────── -->
+  <rect x="16" y="56" width="648" height="104" rx="8"
+        fill="none" stroke="rgba(255,255,255,0.10)"
+        stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="496" y="48" width="104" height="16" fill="#191919"/>
+  <text x="504" y="60" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace"
+        letter-spacing="1.2">IN-ORDER</text>
+  <text x="560" y="60" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">顺序执行</text>
+
+  <!-- ── zone B：乱序执行 ───────────────────────────────────── -->
+  <rect x="16" y="176" width="648" height="152" rx="8"
+        fill="none" stroke="rgba(255,255,255,0.10)"
+        stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect x="496" y="168" width="128" height="16" fill="#191919"/>
+  <text x="504" y="180" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace"
+        letter-spacing="1.2">OUT-OF-ORDER</text>
+  <text x="584" y="180" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">乱序执行</text>
+
+  <!-- ── 共用时间刻度：贯穿上下两块的垂直参考线（后画的卡片会遮住） ── -->
+  <line x1="40" y1="32" x2="40" y2="328" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <line x1="240" y1="32" x2="240" y2="328" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <line x1="360" y1="32" x2="360" y2="328" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <line x1="480" y1="32" x2="480" y2="328" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+
+  <!-- ── 刻度标签（落在时间轴与 zone A 之间的空白段） ────────── -->
+  <rect x="36" y="36" width="24" height="16" rx="2" fill="#191919"/>
+  <text x="40" y="48" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">t0</text>
+  <rect x="236" y="36" width="24" height="16" rx="2" fill="#191919"/>
+  <text x="240" y="48" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">t1</text>
+  <rect x="356" y="36" width="24" height="16" rx="2" fill="#191919"/>
+  <text x="360" y="48" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">t2</text>
+  <rect x="476" y="36" width="24" height="16" rx="2" fill="#191919"/>
+  <text x="480" y="48" fill="#7d8187" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace">t3</text>
+
+  <!-- ══ A1 · LDR（t0 → t1，访存慢） ═════════════════════════ -->
+  <rect x="40" y="72" width="196" height="48" rx="8" fill="#191919"/>
+  <rect x="40" y="72" width="196" height="48" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="52" y="92" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">LDR R1,[R0]</text>
+  <line x1="40" y1="100" x2="236" y2="100" stroke="#212327" stroke-width="1"/>
+  <text x="52" y="112" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">从内存加载 · 慢</text>
+
+  <!-- ══ A2 · ADD R2（t1 → t2，依赖 R1） ════════════════════ -->
+  <rect x="240" y="72" width="116" height="48" rx="8" fill="#191919"/>
+  <rect x="240" y="72" width="116" height="48" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="252" y="92" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">ADD R2,R1,R1</text>
+  <line x1="240" y1="100" x2="356" y2="100" stroke="#212327" stroke-width="1"/>
+  <text x="252" y="112" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">依赖 R1</text>
+
+  <!-- ══ A3 · ADD R4（t2 → t3，无依赖却排最后） ═════════════ -->
+  <rect x="360" y="72" width="116" height="48" rx="8" fill="#191919"/>
+  <rect x="360" y="72" width="116" height="48" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="372" y="92" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">ADD R4, R3, R3</text>
+  <line x1="360" y1="100" x2="476" y2="100" stroke="#212327" stroke-width="1"/>
+  <text x="372" y="112" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">不依赖 R1</text>
+
+  <rect x="36" y="132" width="352" height="16" fill="#191919"/>
+  <text x="40" y="144" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">严格按程序顺序发射：整条流水线到 t3 才结束</text>
+
+  <!-- ══ B1 · LDR（t0 → t1） ════════════════════════════════ -->
+  <rect x="40" y="192" width="196" height="48" rx="8" fill="#191919"/>
+  <rect x="40" y="192" width="196" height="48" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="52" y="212" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">LDR R1,[R0]</text>
+  <line x1="40" y1="220" x2="236" y2="220" stroke="#212327" stroke-width="1"/>
+  <text x="52" y="232" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">访存延迟</text>
+
+  <!-- ══ B2 · ADD R2（t1 → t2，仍须等 LDR） ════════════════ -->
+  <rect x="240" y="192" width="116" height="48" rx="8" fill="#191919"/>
+  <rect x="240" y="192" width="116" height="48" rx="8" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="252" y="212" fill="#ffffff" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">ADD R2,R1,R1</text>
+  <line x1="240" y1="220" x2="356" y2="220" stroke="#212327" stroke-width="1"/>
+  <text x="252" y="232" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">依赖 R1</text>
+
+  <!-- ══ B3 · ADD R4（焦点：另起一行，左端与 LDR 对齐 → 被提前） ══ -->
+  <rect x="40" y="248" width="116" height="48" rx="8" fill="#191919"/>
+  <rect x="40" y="248" width="116" height="48" rx="8" fill="#191919" stroke="#ff7a17" stroke-width="1"/>
+  <text x="52" y="268" fill="#ff7a17" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace">ADD R4, R3, R3</text>
+  <line x1="40" y1="276" x2="156" y2="276" stroke="#212327" stroke-width="1"/>
+  <text x="52" y="288" fill="#dadbdf" font-size="8" font-family="'Inter', sans-serif">提前执行</text>
+
+  <rect x="176" y="264" width="304" height="16" fill="#191919"/>
+  <text x="184" y="276" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">与 LDR 的访存延迟重叠，不必等到 t2 之后</text>
+
+  <rect x="36" y="308" width="360" height="16" fill="#191919"/>
+  <text x="40" y="320" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">无数据依赖即可乱序发射：整条流水线到 t2 就结束</text>
+
+  <!-- ── 图例（底部横条） ──────────────────────────────────── -->
+  <line x1="32" y1="356" x2="648" y2="356" stroke="#212327" stroke-width="0.8"/>
+  <text x="32" y="376" fill="#7d8187" font-size="8"
+        font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="1.4">LEGEND</text>
+  <line x1="112" y1="360" x2="112" y2="380" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <text x="124" y="376" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">上下共用的时间刻度 t0–t3</text>
+  <rect x="300" y="364" width="24" height="14" rx="2" fill="#212327" stroke="#363a3f" stroke-width="1"/>
+  <text x="332" y="376" fill="#7d8187" font-size="8" font-family="'Inter', sans-serif">指令：横向位置 = 时间，宽度 = 耗时</text>
+</svg>
