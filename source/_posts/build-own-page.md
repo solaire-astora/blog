@@ -40,3 +40,10 @@ toc: true
 
 # 后续修改和维护
 对于纯 Vibe coding 选手来说，尽量就需要避免自己手改代码。此时，使用特定的skill就很重要了。一般情况下，我推荐使用 [Playwright Skill](https://github.com/lackeyjb/playwright-skill)。这个 skill 可以让 AI 直接操作浏览器截图，并且审视自己的修改是否生效，以及修改得对不对。让 AI 能够及时地获取反馈也是非常重要，能够省下很多的时间。
+
+# 总结
+用 AI 构建个人主页，关键得把内容层和表现层拆开：文章继续用 Markdown 维护，页面风格则先抽象成一套清晰的设计规则。之后再让 AI 生成页面、小步修改，并且用浏览器截图反复验收。这样博客后续要换主题、补交互或者修样式时会轻松的多。
+
+:::diagram build-own-page-summary
+AI 构建个人主页的简易路径
+:::
